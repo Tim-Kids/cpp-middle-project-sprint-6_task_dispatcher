@@ -25,7 +25,10 @@ include_directories(
 #         task_dispatcher
 # )
 
-include(CTest)
+# Хелпер для построения дерева каталогов проекта.
+add_executable(blueprint "${CMAKE_CURRENT_SOURCE_DIR}/third_party/blueprint.cpp")
+
+#include(CTest)
 enable_testing()
 
 add_subdirectory(src)
