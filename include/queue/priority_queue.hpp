@@ -3,14 +3,10 @@
 #include "queue/unbounded_queue.hpp"
 #include "types.hpp"
 
-#include <atomic>
-#include <limits>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <stdexcept>
-#include <unordered_map>
 
 namespace dispatcher::queue {
 

@@ -1,5 +1,6 @@
 #include "queue/priority_queue.hpp"
-#include <ranges>
+
+#include <exception>
 #include <algorithm>
 #include <memory>
 
@@ -31,7 +32,7 @@ void PriorityQueue::Push(TaskPriority priority, std::function<void()> task) {
         }
     }
 
-    // В нашем случае деделока не произойдет, если вызвать Push под мьютексом PriorityQueue, потому что логика
+    // В нашем случае дедлока не произойдет, если вызвать Push под мьютексом PriorityQueue, потому что логика
     // приложения подразумевает строгий порядок захвата мьютексов потоками: 1. Мьютекс из PriorityQueue 2. Мьютекс
     // подлежащей Bounded/UnboundedQueue. Однако то, что мы вынесли Push после разблокировки мьютекса немного повысит
     // производительность при больших нагрузках.
@@ -71,7 +72,7 @@ std::optional<std::function<void()>> PriorityQueue::Pop() {
 void PriorityQueue::Shutdown() {
     {
         std::lock_guard lock(mutex_);  // Синхронизируемся обязательно под тем же мьютексом, что и cv_ в Pop(). Только
-                                       // там код внутри cv_ увидит актулаьные значения разделяемых данных.
+                                       // так код внутри cv_ увидит актулаьные значения разделяемых данных.
         active_ = false;
     }
     cv_.notify_all();   // Пробуждаем в Pop() все спящие потоки - корректно завершаем работу.

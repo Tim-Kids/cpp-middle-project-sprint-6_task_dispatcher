@@ -2,6 +2,7 @@ set(target dispatcher_test)
 
 add_executable(${target}
     task_dispatcher.cpp
+        thread_pool/thread_pool.cpp
 )
 
 target_link_libraries(${target}
@@ -14,3 +15,4 @@ target_link_libraries(${target}
 add_test(NAME ${target} COMMAND ${target})
 
 add_subdirectory(queue)
+add_subdirectory(thread_pool)
