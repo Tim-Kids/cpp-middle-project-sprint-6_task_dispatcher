@@ -1,11 +1,11 @@
 set(target dispatcher_test)
 
 add_executable(${target}
-    task_dispatcher.cpp
+        task_dispatcher.cpp
 )
 
 target_link_libraries(${target}
-    PRIVATE
+        PRIVATE
         GTest::GTest
         GTest::Main
         task_dispatcher
@@ -14,3 +14,4 @@ target_link_libraries(${target}
 add_test(NAME ${target} COMMAND ${target})
 
 add_subdirectory(queue)
+add_subdirectory(thread_pool)

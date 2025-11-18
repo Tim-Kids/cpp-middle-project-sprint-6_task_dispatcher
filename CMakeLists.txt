@@ -10,20 +10,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(GTest REQUIRED)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include
 )
 
-# set(target dispatcher)
+set(target dispatcher)
 
-# add_executable(${target} main.cpp)
-# target_include_directories(${target} PUBLIC
-#     ${CMAKE_CURRENT_SOURCE_DIR}/include
-# )
+add_executable(${target} main.cpp)
+target_include_directories(${target} PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
-# target_link_libraries(${target} 
-#     PRIVATE
-#         task_dispatcher
-# )
+target_link_libraries(${target}
+        PRIVATE
+        task_dispatcher
+)
 
 include(CTest)
 enable_testing()

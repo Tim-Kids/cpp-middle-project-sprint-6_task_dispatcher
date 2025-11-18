@@ -3,30 +3,34 @@
 #include "queue/unbounded_queue.hpp"
 #include "types.hpp"
 
-#include <atomic>
-#include <limits>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <stdexcept>
-#include <unordered_map>
 
 namespace dispatcher::queue {
 
 class PriorityQueue {
-    // здесь ваш код
-public:
-    // explicit PriorityQueue(?);
+    std::map<TaskPriority, std::unique_ptr<IQueue>> priority_queues_;
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    bool active_ {true};
 
-    void push(TaskPriority priority, std::function<void()> task);
-    // block on pop until shutdown is called
-    // after that return std::nullopt on empty queue
-    std::optional<std::function<void()>> pop();
+    public:
+    explicit PriorityQueue(const std::map<TaskPriority, QueueOptions>& config);
 
-    void shutdown();
+    void Push(TaskPriority priority, std::function<void()> task);
 
-    ~PriorityQueue();
+    std::optional<std::function<void()>> Pop();
+
+    void Shutdown();
+
+    // Для юнит-тестирования класса.
+    auto& GetQueues() const {
+        return priority_queues_;
+    }
+
+    ~PriorityQueue() = default;
 };
 
 }  // namespace dispatcher::queue
