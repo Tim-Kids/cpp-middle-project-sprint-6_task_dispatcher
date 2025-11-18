@@ -15,7 +15,7 @@ using dispatcher::queue::PriorityQueue;
 using dispatcher::queue::QueueOptions;
 using dispatcher::thread_pool::ThreadPool;
 
-struct MyPriorityQueueTest: public testing::Test {
+struct MyThreadPoolTest: public testing::Test {
     const std::map<TaskPriority, QueueOptions> config = {{TaskPriority::High,   QueueOptions{true,  100}},
         {TaskPriority::Normal, QueueOptions{false, std::nullopt}}};
 
@@ -29,7 +29,7 @@ struct MyPriorityQueueTest: public testing::Test {
 constexpr auto SHORT = std::chrono::milliseconds(50);
 constexpr auto LONG  = std::chrono::milliseconds(200);
 
-TEST_F(MyPriorityQueueTest, ExecutesAllTasks) {
+TEST_F(MyThreadPoolTest, ExecutesAllTasks) {
     std::atomic<int> counter = 0;
 
     {
@@ -42,7 +42,7 @@ TEST_F(MyPriorityQueueTest, ExecutesAllTasks) {
     ASSERT_EQ(counter.load(), 100);
 }
 
-TEST_F(MyPriorityQueueTest, WorkersBlockAndWakeCorrectly) {
+TEST_F(MyThreadPoolTest, WorkersBlockAndWakeCorrectly) {
     std::atomic<int> val = 0;
 
     {
@@ -58,7 +58,7 @@ TEST_F(MyPriorityQueueTest, WorkersBlockAndWakeCorrectly) {
     ASSERT_EQ(val.load(), 1);
 }
 
-TEST_F(MyPriorityQueueTest, ShutdownStopsWorkers) {
+TEST_F(MyThreadPoolTest, ShutdownStopsWorkers) {
     auto pool = std::make_unique<ThreadPool>(pq, 4);
 
     std::this_thread::sleep_for(SHORT);
@@ -69,7 +69,7 @@ TEST_F(MyPriorityQueueTest, ShutdownStopsWorkers) {
     ASSERT_FALSE(t.has_value());
 }
 
-TEST_F(MyPriorityQueueTest, DrainsTasksBeforeExit) {
+TEST_F(MyThreadPoolTest, DrainsTasksBeforeExit) {
     std::atomic<int> counter = 0;
 
     {
@@ -82,9 +82,8 @@ TEST_F(MyPriorityQueueTest, DrainsTasksBeforeExit) {
     ASSERT_EQ(counter.load(), 20);
 }
 
-TEST_F(MyPriorityQueueTest, RespectsPriorities) {
+TEST_F(MyThreadPoolTest, RespectsPriorities) {
     std::vector<std::string> order;
-    std::mutex m;
 
     pq->Push(TaskPriority::Normal, [&]{order.emplace_back("N1");});
     pq->Push(TaskPriority::Normal, [&]{order.emplace_back("N2");});
@@ -95,7 +94,7 @@ TEST_F(MyPriorityQueueTest, RespectsPriorities) {
         ThreadPool pool(pq, 3);  // Сами воркеры не гарантируют приоритетность задач. Если в очереди нет задач с
                                  // High-приоритетом, то воркер возьмет в работу Noraml и не будет ждать поступления
                                  // задач с высоким приоритетом. Поэтому спрева заполняем очеред в (1), потом запускаем
-                                 // воркеров в отлеьном скоупе (воркреы вызывают Pop() в своем деструкторе).
+                                 // воркеров в отдельном скоупе (воркеры вызывают Pop() в своем деструкторе).
     }
 
     std::this_thread::sleep_for(LONG);
@@ -107,7 +106,7 @@ TEST_F(MyPriorityQueueTest, RespectsPriorities) {
     ASSERT_EQ(order[3], "N2");
 }
 
-TEST_F(MyPriorityQueueTest, MultiThreadedProducers) {
+TEST_F(MyThreadPoolTest, MultiThreadedProducers) {
 
     std::atomic<int> count = 0;
 
@@ -131,7 +130,7 @@ TEST_F(MyPriorityQueueTest, MultiThreadedProducers) {
     ASSERT_EQ(count.load(), 100);
 }
 
-TEST_F(MyPriorityQueueTest, StdExceptionInsideTaskHandled) {
+TEST_F(MyThreadPoolTest, StdExceptionInsideTaskHandled) {
     std::atomic<int> ok = 0;
 
     // Бросает исключение в таске и обрабатывает его.
@@ -151,7 +150,7 @@ TEST_F(MyPriorityQueueTest, StdExceptionInsideTaskHandled) {
     ASSERT_EQ(ok.load(), 1);
 }
 
-TEST_F(MyPriorityQueueTest, NonStdExceptionInsideTaskHandled) {
+TEST_F(MyThreadPoolTest, NonStdExceptionInsideTaskHandled) {
     std::atomic<int> ok = 0;
 
     // Бросаем не std-исключение. Также должен не нарушать работу воркеров.

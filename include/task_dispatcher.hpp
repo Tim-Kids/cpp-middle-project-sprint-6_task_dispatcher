@@ -8,13 +8,19 @@
 
 namespace dispatcher {
 
-class TaskDispatcher {
-    // здесь ваш код
-public:
-    // TaskDispatcher(size_t thread_count, ?);
+inline const std::map<TaskPriority, queue::QueueOptions> init_config = {
+    {TaskPriority::High, queue::QueueOptions {true, 1000}},
+    {TaskPriority::Normal, queue::QueueOptions {false, std::nullopt}}};
 
-    void schedule(TaskPriority priority, std::function<void()> task);
-    ~TaskDispatcher();
+class TaskDispatcher {
+    std::shared_ptr<queue::PriorityQueue> pq_ = nullptr;
+    std::unique_ptr<thread_pool::ThreadPool> tp_ = nullptr;
+
+    public:
+    explicit TaskDispatcher(size_t thread_count,
+                            const std::map<TaskPriority, queue::QueueOptions>& config = init_config);
+
+    void Schedule(TaskPriority priority, std::function<void()> task);
 };
 
 }  // namespace dispatcher

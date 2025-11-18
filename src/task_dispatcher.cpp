@@ -2,6 +2,12 @@
 
 namespace dispatcher {
 
-// здесь ваш код
+TaskDispatcher::TaskDispatcher(size_t thread_count, const std::map<TaskPriority, queue::QueueOptions>& config):
+    pq_(std::make_shared<queue::PriorityQueue>(config)),
+    tp_(std::make_unique<thread_pool::ThreadPool>(pq_, thread_count)) {}
 
-} // namespace dispatcher
+void TaskDispatcher::Schedule(TaskPriority priority, std::function<void()> task) {
+    pq_->Push(priority, std::move(task));
+}
+
+}  // namespace dispatcher

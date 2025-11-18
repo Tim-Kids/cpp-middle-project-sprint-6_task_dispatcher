@@ -1,12 +1,11 @@
 set(target dispatcher_test)
 
 add_executable(${target}
-    task_dispatcher.cpp
-        thread_pool/thread_pool.cpp
+        task_dispatcher.cpp
 )
 
 target_link_libraries(${target}
-    PRIVATE
+        PRIVATE
         GTest::GTest
         GTest::Main
         task_dispatcher

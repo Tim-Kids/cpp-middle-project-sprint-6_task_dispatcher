@@ -7,7 +7,7 @@
 
 namespace dispatcher::thread_pool {
 
-ThreadPool::ThreadPool(std::shared_ptr<queue::PriorityQueue> tasks, size_t num_threads): pq_(tasks) {
+ThreadPool::ThreadPool(std::shared_ptr<queue::PriorityQueue> pq, size_t num_threads): pq_(pq) {
     workers_.reserve(num_threads);
     for(int i = 0; i < num_threads; ++i) {
         workers_.emplace_back(&ThreadPool::Run, this);
