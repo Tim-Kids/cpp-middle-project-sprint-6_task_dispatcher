@@ -16,8 +16,8 @@ constexpr auto SHORT = std::chrono::milliseconds(50);
 constexpr auto LONG  = std::chrono::milliseconds(200);
 
 struct MyPriorityQueueTest: public testing::Test {
-    const std::map<TaskPriority, QueueOptions> config = {{TaskPriority::High,   QueueOptions{true,  100}},
-        {TaskPriority::Normal, QueueOptions{false, std::nullopt}}};
+    const std::map<TaskPriority, QueueOptions> config = {{TaskPriority::High, QueueOptions {true, 100}},
+                                                         {TaskPriority::Normal, QueueOptions {false, std::nullopt}}};
 
     std::unique_ptr<PriorityQueue> pq = nullptr;
 
@@ -46,7 +46,7 @@ TEST_F(MyPriorityQueueTest, ConstructQueuesFromConfig) {
 TEST_F(MyPriorityQueueTest, SingleTaskPushPop) {
 
     std::atomic<int> val = 0;
-    pq->Push(TaskPriority::Normal, [&]{ val = 123; });
+    pq->Push(TaskPriority::Normal, [&] { val = 123; });
 
     auto task = pq->Pop();
     ASSERT_TRUE(task.has_value());
@@ -58,13 +58,13 @@ TEST_F(MyPriorityQueueTest, SingleTaskPushPop) {
 TEST_F(MyPriorityQueueTest, HighPriorityServedBeforeNormal) {
     std::vector<std::string> order;
 
-    pq->Push(TaskPriority::Normal, [&]{ order.push_back("N1"); });
-    pq->Push(TaskPriority::Normal, [&]{ order.push_back("N2"); });
+    pq->Push(TaskPriority::Normal, [&] { order.push_back("N1"); });
+    pq->Push(TaskPriority::Normal, [&] { order.push_back("N2"); });
 
-    pq->Push(TaskPriority::High,   [&]{ order.push_back("H1"); });
-    pq->Push(TaskPriority::High,   [&]{ order.push_back("H2"); });
+    pq->Push(TaskPriority::High, [&] { order.push_back("H1"); });
+    pq->Push(TaskPriority::High, [&] { order.push_back("H2"); });
 
-    for (int i = 0; i < 4; ++i) {
+    for(int i = 0; i < 4; ++i) {
         auto task = pq->Pop();
         ASSERT_TRUE(task.has_value());
         (*task)();
@@ -88,7 +88,7 @@ TEST_F(MyPriorityQueueTest, PopBlocksUntilTaskArrives) {
     std::this_thread::sleep_for(SHORT);
     ASSERT_EQ(fut.wait_for(std::chrono::milliseconds(0)), std::future_status::timeout);
 
-    pq->Push(TaskPriority::Normal, []{});   // После пуша поток fut будет разблокирован.
+    pq->Push(TaskPriority::Normal, [] {});  // После пуша поток fut будет разблокирован.
 
     // Ждем какое-то время и проверяем готовность потока fut - должна быть true.
     ASSERT_EQ(fut.wait_for(LONG), std::future_status::ready);
@@ -97,8 +97,8 @@ TEST_F(MyPriorityQueueTest, PopBlocksUntilTaskArrives) {
 
 TEST_F(MyPriorityQueueTest, ShutdownCausesPopToReturnNullopt) {
 
-    auto f = std::async(std::launch::async, [&]{
-        auto t = pq->Pop();     // Поток блокируется, т.к. очередь пустая.
+    auto f = std::async(std::launch::async, [&] {
+        auto t = pq->Pop();  // Поток блокируется, т.к. очередь пустая.
         return t;  // 1 - fut попробует изъять задачу из очереди. После неуспешной попытки (очередь все еще пуста)
                    // увидит команду Shutdown и вернет nullopt.
     });
@@ -120,7 +120,7 @@ TEST_F(MyPriorityQueueTest, TasksQueuedBeforeShutdownAreDrained) {
     pq->Shutdown();
 
     // Обрабатываем задачи в одном потоке вручную.
-    while (true) {
+    while(true) {
         auto task = pq->Pop();
         if(!task) {
             break;
@@ -145,13 +145,13 @@ TEST_F(MyPriorityQueueTest, MultiThreadedStressTest) {
     };
 
     auto prod_norm = [&] {
-        for (int i = 0; i < NORM_COUNT; ++i) {
+        for(int i = 0; i < NORM_COUNT; ++i) {
             pq->Push(TaskPriority::Normal, [&] { executed++; });
         }
     };
 
     auto consumer = [&] {
-        while (true) {
+        while(true) {
             auto task = pq->Pop();
             if(!task) {
                 break;
@@ -177,15 +177,12 @@ TEST_F(MyPriorityQueueTest, MultiThreadedStressTest) {
     ASSERT_EQ(executed.load(), HIGH_COUNT + NORM_COUNT);
 }
 
-
 TEST_F(MyPriorityQueueTest, PushThrowsForMissingPriorityQueue) {
-    const std::map<TaskPriority, QueueOptions> config = {
-        {TaskPriority::High, QueueOptions{true, 10}}
-    };
+    const std::map<TaskPriority, QueueOptions> config = {{TaskPriority::High, QueueOptions {true, 10}}};
 
     PriorityQueue pq(config);
 
-    ASSERT_THROW(pq.Push(TaskPriority::Normal, []{}), std::invalid_argument);
+    ASSERT_THROW(pq.Push(TaskPriority::Normal, [] {}), std::invalid_argument);
 }
 
 TEST_F(MyPriorityQueueTest, PopAfterShutdownAndEmptyQueuesReturnsNulloptImmediately) {

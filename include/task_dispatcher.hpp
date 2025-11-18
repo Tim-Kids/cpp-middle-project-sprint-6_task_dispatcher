@@ -13,7 +13,7 @@ inline const std::map<TaskPriority, queue::QueueOptions> init_config = {
     {TaskPriority::Normal, queue::QueueOptions {false, std::nullopt}}};
 
 class TaskDispatcher {
-    std::shared_ptr<queue::PriorityQueue> pq_ = nullptr;
+    std::shared_ptr<queue::PriorityQueue> pq_    = nullptr;
     std::unique_ptr<thread_pool::ThreadPool> tp_ = nullptr;
 
     public:

@@ -2,7 +2,7 @@
 
 namespace dispatcher::queue {
 
-void UnboundedQueue::Push(std::function<void()>  task) {
+void UnboundedQueue::Push(std::function<void()> task) {
     std::lock_guard lock(mutex_);
     queue_.push(std::move(task));
     not_empty_.notify_one();
@@ -29,5 +29,4 @@ std::optional<std::function<void()>> UnboundedQueue::TryPop() {
     return task;
 }
 
-
-} // namespace dispatcher::queue
+}  // namespace dispatcher::queue

@@ -13,9 +13,9 @@ using namespace dispatcher::queue;
 TEST(UnboundedQueueTest, PushPopBasicFIFO) {
     UnboundedQueue q;
 
-    q.Push([]{});
-    q.Push([]{});
-    q.Push([]{});
+    q.Push([] {});
+    q.Push([] {});
+    q.Push([] {});
 
     auto t1 = q.Pop();
     auto t2 = q.Pop();
@@ -38,7 +38,7 @@ TEST(UnboundedQueueTest, TryPopNonBlocking) {
 
     ASSERT_FALSE(q.TryPop().has_value());
 
-    q.Push([]{});
+    q.Push([] {});
     ASSERT_TRUE(q.TryPop().has_value());
 }
 
@@ -53,7 +53,7 @@ TEST(UnboundedQueueTest, PopBlocksUntilItemAvailable) {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     ASSERT_EQ(fut.wait_for(std::chrono::milliseconds(0)), std::future_status::timeout);
 
-    q.Push([]{});
+    q.Push([] {});
 
     ASSERT_EQ(fut.wait_for(std::chrono::milliseconds(200)), std::future_status::ready);
     ASSERT_TRUE(fut.get());
@@ -70,8 +70,8 @@ TEST(UnboundedQueueTest, PopDoesNotMissNotifications) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-    q.Push([]{});
-    q.Push([]{});
+    q.Push([] {});
+    q.Push([] {});
 
     ASSERT_EQ(fut.wait_for(std::chrono::milliseconds(300)), std::future_status::ready);
     ASSERT_TRUE(fut.get());
@@ -84,13 +84,13 @@ TEST(UnboundedQueueTest, MultiProducerMultiConsumerStress) {
     std::atomic<int> counter = 0;
 
     auto producer = [&q] {
-        for (int i : std::ranges::iota_view(0, N)) {
-            q.Push([]{});
+        for(int i: std::ranges::iota_view(0, N)) {
+            q.Push([] {});
         }
     };
 
     auto consumer = [&] {
-        for (int i : std::ranges::iota_view(0, N)) {
+        for(int i: std::ranges::iota_view(0, N)) {
             auto task = q.Pop();
             ASSERT_TRUE(task.has_value());
             (*task)();

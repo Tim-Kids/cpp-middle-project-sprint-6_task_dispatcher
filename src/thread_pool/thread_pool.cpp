@@ -28,9 +28,9 @@ ThreadPool::~ThreadPool() {
 
 void ThreadPool::Run() {
     while(true) {
-        auto task = pq_->Pop();      // NVRO
+        auto task = pq_->Pop();  // NVRO
         if(!task) {
-            return;     // Прекращаем работу после того, как получили команду Shutdown().
+            return;  // Прекращаем работу после того, как получили команду Shutdown().
         }
         // Так как задачи независимы, то нет смысла использовать примитивы синхронизации при выполнении задач.
         try {
@@ -45,5 +45,4 @@ void ThreadPool::Run() {
     }
 }
 
-
-} // namespace dispatcher::thread_pool
+}  // namespace dispatcher::thread_pool

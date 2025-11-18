@@ -4,7 +4,7 @@ namespace dispatcher::queue {
 
 BoundedQueue::BoundedQueue(int capacity): capacity_(capacity) {}
 
-void BoundedQueue::Push(std::function<void()>  task) {
+void BoundedQueue::Push(std::function<void()> task) {
     std::unique_lock lock(mutex_);
     not_full_.wait(lock, [&] { return queue_.size() < capacity_; });
     queue_.push(std::move(task));

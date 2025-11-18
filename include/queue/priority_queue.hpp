@@ -14,8 +14,9 @@ class PriorityQueue {
     std::map<TaskPriority, std::unique_ptr<IQueue>> priority_queues_;
     std::mutex mutex_;
     std::condition_variable cv_;
-    bool active_{true};
-public:
+    bool active_ {true};
+
+    public:
     explicit PriorityQueue(const std::map<TaskPriority, QueueOptions>& config);
 
     void Push(TaskPriority priority, std::function<void()> task);

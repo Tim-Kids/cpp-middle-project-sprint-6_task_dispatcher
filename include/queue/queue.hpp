@@ -1,7 +1,5 @@
 #pragma once
 
-// #include "priority_queue.hpp"
-
 #include <functional>
 #include <optional>
 
@@ -13,11 +11,11 @@ struct QueueOptions {
 };
 
 class IQueue {
-public:
-    virtual ~IQueue() = default;
-    virtual void Push(std::function<void()> task) = 0;
+    public:
+    virtual ~IQueue()                                     = default;
+    virtual void Push(std::function<void()> task)         = 0;
     virtual std::optional<std::function<void()>> TryPop() = 0;
-    virtual std::optional<std::function<void()>> Pop() = 0;
+    virtual std::optional<std::function<void()>> Pop()    = 0;
 };
 
 }  // namespace dispatcher::queue

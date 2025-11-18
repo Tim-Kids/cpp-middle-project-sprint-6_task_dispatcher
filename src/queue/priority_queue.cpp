@@ -7,7 +7,7 @@
 namespace dispatcher::queue {
 
 PriorityQueue::PriorityQueue(const std::map<TaskPriority, QueueOptions>& config) {
-    for(const auto& [priority, options] : config) {
+    for(const auto& [priority, options]: config) {
         if(options.bounded) {
             if(!options.capacity) {
                 throw std::invalid_argument("Bounded priority queue can't be based on zero capacity");
@@ -44,17 +44,17 @@ std::optional<std::function<void()>> PriorityQueue::Pop() {
     std::unique_lock lock(mutex_);
 
     while(true) {  // Просыпаемся и проверяем, что не было каманды Shutdown(), а очередь все еще активна. При этом
-                      // active_ должен менять свое состояние (другим потоком) только под тем же мьютексом. Because
-                      // cv_.wait(lock) only synchronizes visibility of writes that happened before the mutex was
-                      // unlocked in the notifying thread.
+                   // active_ должен менять свое состояние (другим потоком) только под тем же мьютексом. Because
+                   // cv_.wait(lock) only synchronizes visibility of writes that happened before the mutex was
+                   // unlocked in the notifying thread.
         if(auto high = priority_queues_.find(TaskPriority::High); high != priority_queues_.cend()) {
-            if(auto task = high->second->TryPop()) {    // Сперва проверяем задачи с высоким приоритетом.
-                lock.unlock();      // Пусть потоки проснуться чуть раньше и смогут снова выполнять полезную работу.
+            if(auto task = high->second->TryPop()) {  // Сперва проверяем задачи с высоким приоритетом.
+                lock.unlock();  // Пусть потоки проснуться чуть раньше и смогут снова выполнять полезную работу.
                 return task;
             }
         }
         if(auto normal = priority_queues_.find(TaskPriority::Normal); normal != priority_queues_.cend()) {
-            if(auto task = normal->second->TryPop()) {    // Только потом проверяем задачи с нормальным приоритетом.
+            if(auto task = normal->second->TryPop()) {  // Только потом проверяем задачи с нормальным приоритетом.
                 lock.unlock();
                 return task;
             }
@@ -65,7 +65,7 @@ std::optional<std::function<void()>> PriorityQueue::Pop() {
                                   // которые взяли себе потоки в Pop(), гарантированно завершены.
         }
 
-        cv_.wait(lock);     // Засыпаем и отпускаем мьютекс.
+        cv_.wait(lock);  // Засыпаем и отпускаем мьютекс.
     }
 }
 
@@ -75,8 +75,7 @@ void PriorityQueue::Shutdown() {
                                        // так код внутри cv_ увидит актулаьные значения разделяемых данных.
         active_ = false;
     }
-    cv_.notify_all();   // Пробуждаем в Pop() все спящие потоки - корректно завершаем работу.
+    cv_.notify_all();  // Пробуждаем в Pop() все спящие потоки - корректно завершаем работу.
 }
 
-
-} // namespace dispatcher::queue
+}  // namespace dispatcher::queue
